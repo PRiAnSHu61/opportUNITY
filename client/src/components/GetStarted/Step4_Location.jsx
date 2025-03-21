@@ -8,7 +8,7 @@ const locations = [
   "Ludhiana", "Agra", "Nashik", "Faridabad", "Meerut", "Rajkot", "Varanasi",
   "Srinagar", "Aurangabad", "Dhanbad", "Amritsar", "Navi Mumbai", "Jodhpur",
   "Raipur", "Kota", "Guwahati", "Chandigarh", "Noida", "Dehradun",
-  "Andaman and Nicobar Islands", "Chandigarh", "Delhi", "Puducherry", "Ladakh", "Jammu and Kashmir"
+  "Andaman and Nicobar Islands", "Puducherry", "Ladakh", "Jammu and Kashmir"
 ];
 
 const Step4 = () => {

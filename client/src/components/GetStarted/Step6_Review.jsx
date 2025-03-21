@@ -1,8 +1,12 @@
+import axios from "axios";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const Step6= () => {
+const Step6 = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const {
     disabilities = [],
@@ -12,23 +16,36 @@ const Step6= () => {
     salary = "",
   } = location.state || {};
 
-  const handleEdit = (step) => {
-    navigate(step, {
-      state: {
-        disabilities,
-        skills,
-        jobType,
-        location: userLocation,
-        salary,
-        fromReview: true, 
-      },
-    });
-  };
+  const handleConfirm = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-  const handleConfirm = () => {
-    navigate("/job_recommendations", {
-      state: { disabilities, skills, jobType, location: userLocation, salary },
-    });
+      const userInputs = {
+        disability: disabilities,
+        skills,
+        work_mode: jobType,
+        location: userLocation
+      };
+
+      console.log("Sending data to backend:", userInputs);
+
+      const response = await axios.post("http://127.0.0.1:5001/api/recommend_jobs", userInputs, {
+        headers: { "Content-Type": "application/json" }
+      });
+
+      console.log("API Response:", response.data);
+
+      navigate("/job_recommendations", {
+        state: { userData: userInputs }
+      });
+
+    } catch (error) {
+      console.error("Error fetching job recommendations:", error);
+      setError("Failed to fetch job recommendations. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,41 +54,35 @@ const Step6= () => {
         <h2 className="text-3xl font-semibold text-center text-[#205781]">Step 6: Review Your Selections</h2>
 
         <div className="mt-4 space-y-4">
-          {[ 
-            { label: "Disabilities", value: disabilities.length ? disabilities.join(", ") : "Not specified", step: "/step1_disability" },
-            { label: "Skills", value: skills.length ? skills.join(", ") : "Not specified", step: "/step2_skills" },
-            { label: "Job Type", value: jobType.length ? jobType.join(", ") : "Not specified", step: "/step3_jobtype" },
-            { label: "Location", value: userLocation || "Not specified", step: "/step4_location" },
-            { label: "Expected CTC (LPA)", value: salary || "Not specified", step: "/step5_salary" },
+          {[
+            { label: "Disabilities", value: disabilities.join(", ") || "Not specified" },
+            { label: "Skills", value: skills.join(", ") || "Not specified" },
+            { label: "Job Type", value: jobType.join(", ") || "Not specified" },
+            { label: "Location", value: userLocation || "Not specified" },
+            { label: "Expected CTC (LPA)", value: salary || "Not specified" },
           ].map((item, index) => (
             <div key={index} className="p-4 bg-gray-100 rounded-lg flex justify-between items-center">
               <div>
                 <p className="text-lg font-semibold text-[#205781]">{item.label}:</p>
-                <p className={`text-gray-700 ${item.value === "Not specified" ? "italic text-red-500" : ""}`}>{item.value}</p>
+                <p className="text-gray-700">{item.value}</p>
               </div>
-              <button 
-                onClick={() => handleEdit(item.step)} 
-                className="px-4 py-2 text-sm bg-[#4F959D] text-white rounded-lg hover:bg-[#76b5a9] transition"
-              >
-                Edit
-              </button>
             </div>
           ))}
         </div>
 
+        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+
         <div className="flex justify-between mt-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="px-6 py-3 rounded-lg font-semibold bg-gray-400 text-white hover:bg-gray-500 transition"
-          >
+          <button onClick={() => navigate(-1)} className="px-6 py-3 rounded-lg font-semibold bg-gray-400 text-white hover:bg-gray-500 transition">
             Back
           </button>
 
           <button
             onClick={handleConfirm}
             className="px-6 py-3 rounded-lg font-semibold bg-[#4F959D] text-white hover:bg-[#76b5a9] transition"
+            disabled={loading}
           >
-            Confirm & Proceed
+            {loading ? "Loading..." : "Confirm & Proceed"}
           </button>
         </div>
       </div>
