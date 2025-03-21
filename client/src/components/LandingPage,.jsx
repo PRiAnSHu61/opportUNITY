@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
-import Logo from "../assets/logo.png"; // Adjust the path if needed
+import Logo from "../assets/logo.png"; 
 
 const Landing = () => {
   return (
     <div className="flex flex-col md:flex-row items-center justify-center h-screen bg-gradient-to-b from-[#205781] to-[#F6F8D5] text-white px-12">
-      {/* Left Section - Logo */}
       <div className="flex-1 flex justify-center">
         <img
           src={Logo}
@@ -13,7 +12,6 @@ const Landing = () => {
         />
       </div>
 
-      {/* Right Section - Text Content */}
       <div className="flex-1 text-left animate-slideInRight">
         <h1 className="text-5xl font-bold animate-slideUp">
           Welcome to <span className="text-[#205781]">opportUNITY</span>
@@ -22,7 +20,6 @@ const Landing = () => {
           Empowering individuals with disabilities by providing personalized job recommendations.
         </p>
 
-        {/* Buttons */}
         <div className="mt-6 flex space-x-4 animate-fadeIn delay-300">
           <Link to="/login">
             <button className="bg-[#4F959D] px-6 py-3 rounded-lg text-white font-semibold transition-all duration-300 hover:bg-[#76b5a9] hover:scale-105 shadow-md">
