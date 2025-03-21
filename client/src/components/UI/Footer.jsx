@@ -1,6 +1,6 @@
 import React from "react";
-import { useAuth } from "../context/AuthContext";
-import { useUser } from "../context/UserContext";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { useUser } from "../../context/UserContext.jsx";
 
 const Footer = () => {
   const { currentUser } = useAuth();
