@@ -2,6 +2,10 @@
 /* @tailwind base;
 @tailwind components;
 @tailwind utilities; */
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --primary: #205781;
