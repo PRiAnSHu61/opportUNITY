@@ -100,10 +100,14 @@
 
 // export default Landing;
 import { Link } from "react-router-dom";
+<<<<<<< HEAD
 import { motion } from "framer-motion";
 import wheelchair from "../assets/wheelchair.png";
 import leg from "../assets/leg.png";
 import blind from "../assets/blind.png";
+=======
+import Logo from "../assets/logo.png"; 
+>>>>>>> 2711ee5d4c5046204f718db016f5daa28a3e26ae
 
 const Landing = () => {
   const images = [wheelchair, leg, blind];
@@ -119,6 +123,7 @@ const Landing = () => {
   ];
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen text-black flex flex-col items-center px-6 md:px-12 relative overflow-y-auto snap-y snap-mandatory bg-white">
       {/* Background Decorative Elements */}
       <div className="absolute inset-0 flex justify-center items-center">
@@ -151,6 +156,26 @@ const Landing = () => {
       <div className="w-full flex justify-between items-center py-4 fixed top-0 left-0 right-0 bg-opacity-80 bg-white z-50 px-6 md:px-12">
         <h1 className="text-5xl font-bold bg-gradient-to-r from-[#8E44AD] to-[#3498DB] text-transparent bg-clip-text">opportUNITY</h1>
         <div className="flex space-x-4">
+=======
+    <div className="flex flex-col md:flex-row items-center justify-center h-screen bg-gradient-to-b from-[#205781] to-[#F6F8D5] text-white px-12">
+      <div className="flex-1 flex justify-center">
+        <img
+          src={Logo}
+          alt="OpportUNITY Logo"
+          className="w-56 md:w-72 lg:w-80 object-contain mix-blend-darken opacity-85 drop-shadow-lg animate-fadeIn"
+        />
+      </div>
+
+      <div className="flex-1 text-left animate-slideInRight">
+        <h1 className="text-5xl font-bold animate-slideUp">
+          Welcome to <span className="text-[#205781]">opportUNITY</span>
+        </h1>
+        <p className="text-lg max-w-xl mt-2 opacity-90 animate-fadeIn delay-200">
+          Empowering individuals with disabilities by providing personalized job recommendations.
+        </p>
+
+        <div className="mt-6 flex space-x-4 animate-fadeIn delay-300">
+>>>>>>> 2711ee5d4c5046204f718db016f5daa28a3e26ae
           <Link to="/login">
             <motion.button
               className="px-6 py-3 text-xl rounded-full text-white font-semibold bg-gradient-to-r from-[#8E44AD] to-[#3498DB] transition-all duration-300 hover:shadow-[0px_0px_20px_#2E86C1]"
