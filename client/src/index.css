@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --primary: #205781;
@@ -8,6 +6,7 @@
   --accent: #98D2C0;
   --background: #F6F8D5;
 }
+
 @keyframes fadeIn {
   from {
     opacity: 0;
