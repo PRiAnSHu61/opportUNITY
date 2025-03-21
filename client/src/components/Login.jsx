@@ -1,51 +1,84 @@
-// src/components/Login.jsx
-import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+
+    if (!email || !password) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    if (email === "test@example.com" && password === "password123") {
+      alert("Login successful!");
+      navigate("/step1_disability"); 
+    } else {
+      alert("Invalid email or password.");
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: "#F6F8D5" }}>
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6" style={{ color: "#205781" }}>Welcome Back</h1>
-        <form>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: "#205781" }}>Email</label>
+    <div className="flex items-center justify-center h-screen bg-gradient-to-b from-[#205781] to-[#F6F8D5] text-white px-6">
+      <div className="bg-white text-gray-900 rounded-lg shadow-lg p-8 w-full max-w-md animate-fadeIn">
+        <h2 className="text-3xl font-semibold text-center text-[#205781]">Login</h2>
+
+        <form className="mt-6" onSubmit={handleLogin}>
+          {/* Email */}
+          <label className="block text-sm font-medium">Email</label>
+          <input
+            type="email"
+            className="w-full p-3 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#4F959D]"
+            placeholder="Enter your email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          {/* Password */}
+          <label className="block text-sm font-medium mt-4">Password</label>
+          <div className="relative">
             <input
-              type="email"
-              id="email"
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2"
-              style={{ borderColor: "#4F959D", focus: { ringColor: "#98D2C0" } }}
-              placeholder="Enter your email"
-            />
-          </div>
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: "#205781" }}>Password</label>
-            <input
-              type="password"
-              id="password"
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2"
-              style={{ borderColor: "#4F959D", focus: { ringColor: "#98D2C0" } }}
+              type={showPassword ? "text" : "password"}
+              className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#4F959D]"
               placeholder="Enter your password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3 text-gray-600"
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
           </div>
+
+          <Link to="/forgot-password" className="text-sm text-[#205781] hover:underline mt-2 block">
+            Forgot password?
+          </Link>
+
+          {/* Login Button */}
           <button
             type="submit"
-            className="w-full py-2 text-white font-semibold rounded hover:bg-opacity-90 transition"
-            style={{ backgroundColor: "#205781" }}
+            className="w-full bg-[#4F959D] text-white font-semibold py-3 rounded-lg mt-6 transition hover:bg-[#76b5a9] hover:scale-105"
           >
             Login
           </button>
         </form>
-        <div className="mt-4 text-center">
-          <a href="#" className="text-sm hover:underline" style={{ color: "#4F959D" }}>Forgot Password?</a>
-        </div>
-        <div className="mt-6 text-center">
-          <p className="text-sm" style={{ color: "#205781" }}>
-            Don't have an account?{" "}
-            <a href="/signup" className="font-semibold hover:underline" style={{ color: "#98D2C0" }}>
-              Sign Up
-            </a>
-          </p>
-        </div>
+
+        <p className="text-center mt-4">
+          Don't have an account?{" "}
+          <Link to="/signup" className="text-[#205781] hover:underline font-semibold">
+            Sign Up
+          </Link>
+        </p>
       </div>
     </div>
   );

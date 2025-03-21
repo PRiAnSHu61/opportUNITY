@@ -1,58 +1,66 @@
-// src/components/Signup.jsx
-import React from "react";
+import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const Signup = () => {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: "#F6F8D5" }}>
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6" style={{ color: "#205781" }}>Create an Account</h1>
-        <form>
-          <div className="mb-4">
-            <label htmlFor="name" className="block text-sm font-medium mb-2" style={{ color: "#205781" }}>Full Name</label>
+    <div className="flex items-center justify-center h-screen bg-gradient-to-b from-[#205781] to-[#F6F8D5] text-white px-6">
+      <div className="bg-white text-gray-900 rounded-lg shadow-lg p-8 w-full max-w-md animate-fadeIn">
+        <h2 className="text-3xl font-semibold text-center text-[#205781]">Sign Up</h2>
+
+        <form className="mt-6">
+          {/* Full Name */}
+          <label className="block text-sm font-medium">Full Name</label>
+          <input
+            type="text"
+            className="w-full p-3 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#4F959D]"
+            placeholder="Enter your full name"
+            required
+          />
+
+          {/* Email */}
+          <label className="block text-sm font-medium mt-4">Email</label>
+          <input
+            type="email"
+            className="w-full p-3 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#4F959D]"
+            placeholder="Enter your email"
+            required
+          />
+
+          {/* Password */}
+          <label className="block text-sm font-medium mt-4">Password</label>
+          <div className="relative">
             <input
-              type="text"
-              id="name"
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2"
-              style={{ borderColor: "#4F959D", focus: { ringColor: "#98D2C0" } }}
-              placeholder="Enter your full name"
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: "#205781" }}>Email</label>
-            <input
-              type="email"
-              id="email"
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2"
-              style={{ borderColor: "#4F959D", focus: { ringColor: "#98D2C0" } }}
-              placeholder="Enter your email"
-            />
-          </div>
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: "#205781" }}>Password</label>
-            <input
-              type="password"
-              id="password"
-              className="w-full p-2 border rounded focus:outline-none focus:ring-2"
-              style={{ borderColor: "#4F959D", focus: { ringColor: "#98D2C0" } }}
+              type={showPassword ? "text" : "password"}
+              className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#4F959D]"
               placeholder="Create a password"
+              required
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3 text-gray-600"
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
           </div>
+
+          {/* Signup Button */}
           <button
             type="submit"
-            className="w-full py-2 text-white font-semibold rounded hover:bg-opacity-90 transition"
-            style={{ backgroundColor: "#205781" }}
+            className="w-full bg-[#4F959D] text-white font-semibold py-3 rounded-lg mt-6 transition hover:bg-[#76b5a9] hover:scale-105"
           >
             Sign Up
           </button>
         </form>
-        <div className="mt-6 text-center">
-          <p className="text-sm" style={{ color: "#205781" }}>
-            Already have an account?{" "}
-            <a href="/login" className="font-semibold hover:underline" style={{ color: "#98D2C0" }}>
-              Login
-            </a>
-          </p>
-        </div>
+
+        <p className="text-center mt-4">
+          Already have an account?{" "}
+          <Link to="/login" className="text-[#205781] hover:underline font-semibold">
+            Login
+          </Link>
+        </p>
       </div>
     </div>
   );
