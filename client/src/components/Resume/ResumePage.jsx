@@ -13,7 +13,6 @@ const ResumePage = () => {
 
   const handleUpload = () => {
     setIsUploading(true);
-    // Simulate file upload
     setTimeout(() => {
       setIsUploading(false);
       alert("Resume uploaded successfully!");
@@ -113,3 +112,5 @@ const ResumePage = () => {
 };
 
 export default ResumePage;
+
+
