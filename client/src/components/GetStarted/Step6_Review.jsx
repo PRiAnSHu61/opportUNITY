@@ -1,10 +1,14 @@
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { db } from "../../firebase";
+import { doc, updateDoc } from "firebase/firestore";
+import { useAuth } from "../../context/AuthContext";
 
-const Step6 = () => {
-  const location = useLocation();
+const Step6_Review = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -17,10 +21,17 @@ const Step6 = () => {
   } = location.state || {};
 
   const handleConfirm = async () => {
+    if (!currentUser) return;
+
     try {
       setLoading(true);
       setError("");
 
+      // Save `getStarted: true` in Firestore
+      const userRef = doc(db, "users", currentUser.uid);
+      await updateDoc(userRef, { getStarted: true });
+
+      // Prepare data for job recommendations
       const userInputs = {
         disability: disabilities,
         skills,
@@ -30,19 +41,21 @@ const Step6 = () => {
 
       console.log("Sending data to backend:", userInputs);
 
-      const response = await axios.post("http://127.0.0.1:5001/api/recommend_jobs", userInputs, {
-        headers: { "Content-Type": "application/json" }
-      });
+      // Call job recommendation API
+      const response = await axios.post(
+        "http://127.0.0.1:5001/api/recommend_jobs",
+        userInputs,
+        { headers: { "Content-Type": "application/json" } }
+      );
 
       console.log("API Response:", response.data);
 
-      navigate("/job_recommendations", {
-        state: { userData: userInputs }
-      });
+      // Navigate to job recommendations with user data
+      navigate("/job_recommendations", { state: { userData: userInputs } });
 
     } catch (error) {
-      console.error("Error fetching job recommendations:", error);
-      setError("Failed to fetch job recommendations. Please try again.");
+      console.error("Error:", error);
+      setError("Failed to complete setup. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -55,17 +68,23 @@ const Step6 = () => {
 
         <div className="mt-4 space-y-4">
           {[
-            { label: "Disabilities", value: disabilities.join(", ") || "Not specified" },
-            { label: "Skills", value: skills.join(", ") || "Not specified" },
-            { label: "Job Type", value: jobType.join(", ") || "Not specified" },
-            { label: "Location", value: userLocation || "Not specified" },
-            { label: "Expected CTC (LPA)", value: salary || "Not specified" },
+            { label: "Disabilities", value: disabilities.join(", ") || "Not specified", editPath: "/step1_disability" },
+            { label: "Skills", value: skills.join(", ") || "Not specified", editPath: "/step2_skills" },
+            { label: "Job Type", value: jobType.join(", ") || "Not specified", editPath: "/step3_jobtype" },
+            { label: "Location", value: userLocation || "Not specified", editPath: "/step4_location" },
+            { label: "Expected CTC (LPA)", value: salary || "Not specified", editPath: "/step5_salary" },
           ].map((item, index) => (
             <div key={index} className="p-4 bg-gray-100 rounded-lg flex justify-between items-center">
               <div>
                 <p className="text-lg font-semibold text-[#205781]">{item.label}:</p>
                 <p className="text-gray-700">{item.value}</p>
               </div>
+              <button
+                onClick={() => navigate(item.editPath, { state: location.state })}
+                className="text-blue-600 hover:underline"
+              >
+                Edit
+              </button>
             </div>
           ))}
         </div>
@@ -90,4 +109,4 @@ const Step6 = () => {
   );
 };
 
-export default Step6;
+export default Step6_Review;
