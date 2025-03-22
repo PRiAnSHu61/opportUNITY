@@ -17,13 +17,13 @@ export const UserProvider = ({ children }) => {
       const fetchUserData = async () => {
         const userRef = doc(db, "users", currentUser.uid);
         const userSnap = await getDoc(userRef);
-
+        
         if (userSnap.exists()) {
           setUserData(userSnap.data());
         }
         setLoading(false);
       };
-
+      
       fetchUserData();
     } else {
       setUserData(null);
@@ -32,7 +32,7 @@ export const UserProvider = ({ children }) => {
   }, [currentUser]);
 
   return (
-    <UserContext.Provider value={{ userData }}>
+    <UserContext.Provider value={{ userData, loading, setUserData }}>
       {!loading && children}
     </UserContext.Provider>
   );
