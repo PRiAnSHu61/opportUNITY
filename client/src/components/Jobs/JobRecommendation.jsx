@@ -127,7 +127,7 @@ const JobRecommendation = () => {
     setJobLoadingError(null);
 
     try {
-      const response = await axios.post("http://127.0.0.1:5001/api/recommend_jobs", {
+      const response = await axios.post("https://opportunity-2.onrender.com/api/recommend_jobs", {
         ...userDataToUse,
         page,
         per_page: 6

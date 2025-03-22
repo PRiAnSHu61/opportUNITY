@@ -114,7 +114,9 @@ const Step6 = () => {
       try {
         // Call job recommendation API
         const response = await axios.post(
-          "http://127.0.0.1:5001/api/recommend_jobs",
+          // "http://127.0.0.1:5001/api/recommend_jobs"
+
+          "https://opportunity-2.onrender.com/api/recommend_jobs",
           userInputs,
           { headers: { "Content-Type": "application/json" } }
         );
