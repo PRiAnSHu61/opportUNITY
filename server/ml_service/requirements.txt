@@ -1,2 +1,5 @@
 flask
 gunicorn
+pandas  # If used
+numpy  # If used
+requests  # If making API calls
