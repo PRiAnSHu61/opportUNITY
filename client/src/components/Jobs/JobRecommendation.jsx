@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom"; // Added useNavigate
 import { useJob } from "../../context/JobContext";
 import { useAuth } from "../../context/AuthContext";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 
+// Constants moved outside component to reduce clutter
 const jobImages = {
   "Software Engineer": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
   "Data Scientist": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
@@ -38,34 +39,23 @@ const categoryInfo = {
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.5, ease: "easeOut" }
-  }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
 };
 
 const JobRecommendation = () => {
   const { state } = useLocation();
+  const navigate = useNavigate(); // Added navigate hook
   const { userData: locationUserData, recommendations: locationRecommendations } = state || {};
   const { currentUser } = useAuth();
   const { 
-    jobRecommendations, 
-    setJobRecommendations, 
-    jobsLoaded, 
-    setJobsLoaded,
-    jobLoadingError,
-    setJobLoadingError
+    jobRecommendations, setJobRecommendations, 
+    jobsLoaded, setJobsLoaded,
+    jobLoadingError, setJobLoadingError
   } = useJob();
   
   const [loading, setLoading] = useState(false);
@@ -77,17 +67,15 @@ const JobRecommendation = () => {
   const loadMoreRef = useRef(null);
   const initialDataFetchedRef = useRef(false);
 
-  console.log("Location State:", state);
-  console.log("Current Job Recommendations:", jobRecommendations);
-
+  // Fetch user data either from location state or Firestore
   useEffect(() => {
     const fetchUserDataFromFirestore = async () => {
-      if (userDataToUse !== null) return;      
+      if (userDataToUse !== null) return;
+      
+      // Use location data if available
       if (locationUserData && Object.keys(locationUserData).length > 0) {
-        console.log("Using location user data:", locationUserData);
         setUserDataToUse(locationUserData);
         if (locationRecommendations) {
-          console.log("Setting recommendations from location state:", locationRecommendations);
           const structuredRecommendations = {
             highly_matched: locationRecommendations.highly_matched || [],
             jobs_after_courses: locationRecommendations.jobs_after_courses || [],
@@ -100,22 +88,19 @@ const JobRecommendation = () => {
         return;
       }
 
+      // Otherwise fetch from Firestore
       if (!currentUser) {
         setJobLoadingError("You must be logged in to view job recommendations");
         return;
       }
 
       setFetchingUserData(true);
-
       try {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        const userDocSnap = await getDoc(userDocRef);
-
+        const userDocSnap = await getDoc(doc(db, "users", currentUser.uid));
         if (userDocSnap.exists()) {
-          const userPreferencesData = userDocSnap.data();
-          console.log("Fetched user data from Firestore:", userPreferencesData);
-          if (userPreferencesData && Object.keys(userPreferencesData).length > 0) {
-            setUserDataToUse(userPreferencesData);
+          const userData = userDocSnap.data();
+          if (userData && Object.keys(userData).length > 0) {
+            setUserDataToUse(userData);
           } else {
             setJobLoadingError("Please complete your profile to get job recommendations");
           }
@@ -123,7 +108,6 @@ const JobRecommendation = () => {
           setJobLoadingError("User profile not found. Please complete your profile");
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
         setJobLoadingError("Failed to load your profile data. Please try again");
       } finally {
         setFetchingUserData(false);
@@ -133,38 +117,21 @@ const JobRecommendation = () => {
     fetchUserDataFromFirestore();
   }, [currentUser, locationUserData, locationRecommendations, setJobRecommendations, setJobsLoaded, setJobLoadingError, userDataToUse]);
 
+  // Fetch job recommendations
   const fetchJobRecommendations = useCallback(async () => {
-    if (!userDataToUse || Object.keys(userDataToUse).length === 0) {
-      console.log("No user data available for fetching recommendations");
-      return;
-    }
+    if (!userDataToUse || Object.keys(userDataToUse).length === 0) return;
+    if (page === 1 && jobsLoaded && jobRecommendations.highly_matched.length > 0) return;
+    if (page === 1 && initialDataFetchedRef.current) return;
 
-    if (page === 1 && jobsLoaded && jobRecommendations.highly_matched.length > 0) {
-      console.log("Jobs already loaded for initial page");
-      return;
-    }
-
-    if (page === 1 && initialDataFetchedRef.current) {
-      console.log("Initial data already fetched");
-      return;
-    }
-
-    if (page === 1) {
-      setLoading(true);
-    } else {
-      setLoadingMore(true);
-    }
+    page === 1 ? setLoading(true) : setLoadingMore(true);
     setJobLoadingError(null);
 
     try {
-      console.log(`Fetching job recommendations for page ${page} with data:`, userDataToUse);
       const response = await axios.post("http://127.0.0.1:5001/api/recommend_jobs", {
         ...userDataToUse,
         page,
         per_page: 6
       });
-
-      console.log(`API Response for page ${page}:`, response.data);
 
       if (response.data) {
         const newRecommendations = {
@@ -179,7 +146,6 @@ const JobRecommendation = () => {
             : [...jobRecommendations.suggested_jobs, ...(response.data.suggested_jobs || [])]
         };
 
-        console.log("Setting new recommendations:", newRecommendations);
         setJobRecommendations(newRecommendations);
         setHasMore(response.data.has_more === true);
         if (page === 1) {
@@ -188,26 +154,22 @@ const JobRecommendation = () => {
         }
       }
     } catch (error) {
-      console.error("Error fetching job recommendations:", error);
       setJobLoadingError(`Failed to fetch job recommendations: ${error.message}`);
-    }
-     finally {
-      if (page === 1) {
-        setLoading(false);
-      } else {
-        setLoadingMore(false);
-      }
+    } finally {
+      page === 1 ? setLoading(false) : setLoadingMore(false);
     }
   }, [userDataToUse, page, jobsLoaded, jobRecommendations, setJobRecommendations, setJobsLoaded, setJobLoadingError]);
 
+  // Trigger job fetch when conditions are met
   useEffect(() => {
     if (userDataToUse && Object.keys(userDataToUse).length > 0) {
       if ((page === 1 && !jobsLoaded) || page > 1) {
-        console.log(`Fetching recommendations for page ${page}`);
         fetchJobRecommendations();
       }
     }
   }, [fetchJobRecommendations, userDataToUse, page, jobsLoaded]);
+
+  // Infinite scrolling observer
   useEffect(() => {
     const currentObserverRef = loadMoreRef.current;
     
@@ -217,9 +179,7 @@ const JobRecommendation = () => {
     
     const observer = new IntersectionObserver(
       (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && hasMore && !loading && !loadingMore) {
-          console.log("Load more element is intersecting, loading more jobs...");
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
           setPage((prev) => prev + 1);
         }
       },
@@ -227,16 +187,65 @@ const JobRecommendation = () => {
     );
 
     observer.observe(currentObserverRef);
-    console.log("Observer attached to:", currentObserverRef);
+    return () => currentObserverRef && observer.unobserve(currentObserverRef);
+  }, [hasMore, loading, loadingMore, jobsLoaded]);
 
-    return () => {
-      if (currentObserverRef) {
-        observer.unobserve(currentObserverRef);
-        console.log("Observer detached");
+  // Handle job details button click
+  const handleViewDetails = (job) => {
+    // Navigate to job details page with job data
+    navigate('/job-details', {
+      state: {
+        job,
+        userData: userDataToUse
       }
-    };
-  }, [hasMore, loading, loadingMore, jobsLoaded]); 
+    });
+  };
 
+  // Component for loading indicator
+  const LoadingIndicator = () => (
+    <div className="flex justify-center items-center py-8">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+    </div>
+  );
+
+  // Component for decorative elements
+  const DecorativeElements = () => (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {[...Array(8)].map((_, i) => (
+        <motion.div
+          key={`bubble-${i}`}
+          className="absolute bg-gradient-to-r from-purple-600 to-blue-500 opacity-20 rounded-full"
+          style={{ 
+            width: `${Math.floor(Math.random() * 8) + 3}rem`,
+            height: `${Math.floor(Math.random() * 8) + 3}rem`,
+            top: `${Math.random() * 100}%`, 
+            left: `${Math.random() * 100}%` 
+          }}
+          initial={{ opacity: 0.2 }}
+          animate={{ y: [0, Math.random() * 10 - 5], x: [0, Math.random() * 10 - 5] }}
+          transition={{ duration: 3 + Math.random() * 2, repeat: Infinity, repeatType: "reverse" }}
+        />
+      ))}
+      
+      {[...Array(3)].map((_, i) => (
+        <motion.div
+          key={`line-${i}`}
+          className="absolute h-0.5 bg-gradient-to-r from-purple-600 to-blue-500 opacity-30"
+          style={{ 
+            width: `${Math.random() * 10 + 5}rem`,
+            top: `${Math.random() * 100}%`, 
+            left: `${Math.random() * 100}%`,
+            transform: `rotate(${Math.random() * 360}deg)` 
+          }}
+          initial={{ opacity: 0.3 }}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 4 + Math.random() * 3, repeat: Infinity }}
+        />
+      ))}
+    </div>
+  );
+
+  // Render job card
   const renderJobCard = (job, category, index) => {
     const jobRole = job["Job Role"] || "default";
     const jobImage = jobImages[jobRole] || jobImages.default;
@@ -334,6 +343,7 @@ const JobRecommendation = () => {
             className="w-full px-4 py-2 bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-medium rounded-lg shadow-md"
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
+            onClick={() => handleViewDetails(job)} // Added click handler
           >
             View Details
           </motion.button>
@@ -342,94 +352,30 @@ const JobRecommendation = () => {
     );
   };
 
-  const renderJobGrid = (jobs, category) => {
-    return (
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 md:grid-cols-2 gap-6"
-      >
-        {jobs.map((job, index) => renderJobCard(job, category, index))}
-      </motion.div>
-    );
-  };
-
-  const LoadingIndicator = () => (
-    <div className="flex justify-center items-center py-8">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-    </div>
+  // Render job grid
+  const renderJobGrid = (jobs, category) => (
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="grid grid-cols-1 md:grid-cols-2 gap-6"
+    >
+      {jobs.map((job, index) => renderJobCard(job, category, index))}
+    </motion.div>
   );
 
-  const hasJobs = 
-    jobRecommendations.highly_matched.length + 
-    jobRecommendations.jobs_after_courses.length + 
-    jobRecommendations.suggested_jobs.length > 0;
-
-  const jobsByCategory = {};
-  Object.keys(categoryInfo).forEach(category => {
-    if (jobRecommendations[category] && jobRecommendations[category].length > 0) {
-      jobsByCategory[category] = jobRecommendations[category];
-    }
-  });
-
-  const DecorativeElements = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Bubbles matching Landing page style */}
-      {[...Array(8)].map((_, i) => (
-        <motion.div
-          key={`bubble-${i}`}
-          className="absolute bg-gradient-to-r from-purple-600 to-blue-500 opacity-20 rounded-full"
-          style={{ 
-            width: `${Math.floor(Math.random() * 8) + 3}rem`,
-            height: `${Math.floor(Math.random() * 8) + 3}rem`,
-            top: `${Math.random() * 100}%`, 
-            left: `${Math.random() * 100}%` 
-          }}
-          initial={{ opacity: 0.2 }}
-          animate={{
-            y: [0, Math.random() * 10 - 5],
-            x: [0, Math.random() * 10 - 5],
-          }}
-          transition={{
-            duration: 3 + Math.random() * 2,
-            repeat: Infinity,
-            repeatType: "reverse",
-          }}
-        />
-      ))}
-      
-      {/* Lines with animation */}
-      {[...Array(3)].map((_, i) => (
-        <motion.div
-          key={`line-${i}`}
-          className="absolute h-0.5 bg-gradient-to-r from-purple-600 to-blue-500 opacity-30"
-          style={{ 
-            width: `${Math.random() * 10 + 5}rem`,
-            top: `${Math.random() * 100}%`, 
-            left: `${Math.random() * 100}%`,
-            transform: `rotate(${Math.random() * 360}deg)` 
-          }}
-          initial={{ opacity: 0.3 }}
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 4 + Math.random() * 3,
-            repeat: Infinity,
-          }}
-        />
-      ))}
-    </div>
+  // Calculate display data
+  const hasJobs = Object.values(jobRecommendations).some(arr => arr.length > 0);
+  const jobsByCategory = Object.fromEntries(
+    Object.entries(categoryInfo)
+      .filter(([category]) => jobRecommendations[category]?.length > 0)
+      .map(([category]) => [category, jobRecommendations[category]])
   );
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-b from-white to-blue-50 px-6 py-12">
-      {/* Background decorative elements */}
       <DecorativeElements />
       
-      {/* Main Content */}
       <motion.div 
         className="w-full max-w-6xl relative z-10"
         initial={{ opacity: 0, y: 30 }}
@@ -487,7 +433,6 @@ const JobRecommendation = () => {
 
         {/* Rendered Job Categories */}
         {!loading && !fetchingUserData && (
-          // Render all categories in a vertical flow
           Object.keys(jobsByCategory).map((category) => (
             <motion.div 
               key={category} 
@@ -510,12 +455,12 @@ const JobRecommendation = () => {
           ))
         )}
         
-        {/* Load More indicator - FIXED */}
+        {/* Load More indicator */}
         {hasJobs && !loading && !fetchingUserData && (
           <div 
             ref={loadMoreRef} 
             className="py-8 my-4 w-full text-center"
-            style={{ minHeight: '100px' }} // Ensure it has enough height to be detected
+            style={{ minHeight: '100px' }}
           >
             {loadingMore ? (
               <LoadingIndicator />

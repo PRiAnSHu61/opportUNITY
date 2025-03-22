@@ -316,16 +316,6 @@ const Login = () => {
                 />
               </svg>
             </motion.button>
-            
-            <motion.button
-              whileHover={{ y: -3, boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 bg-white shadow-sm"
-            >
-              <svg className="w-6 h-6" fill="#1877F2" viewBox="0 0 24 24">
-                <path d="M9.198 21.5h4v-8.01h3.604l.396-3.98h-4V7.5a1 1 0 0 1 1-1h3v-4h-3a5 5 0 0 0-5 5v2.01h-2l-.396 3.98h2.396v8.01Z" />
-              </svg>
-            </motion.button>
           </div>
         </motion.div>
 

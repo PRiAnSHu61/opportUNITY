@@ -13,9 +13,11 @@ import Layout from "./components/Layout.jsx";
 import { JobProvider } from "./context/JobContext.jsx";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { SetupRoute } from "./components/SetupRoute";
-import ProfilePage from "./components/Profile/ProfilePage.jsx";
-import ResumePage from "./components/Resume/ResumePage.jsx";
-import { useAuth } from "./context/AuthContext";
+// import ProfilePage from "./components/Profile/ProfilePage.jsx";
+import Profile from "./components/Profile/Profile.jsx";
+import Resume from "./components/Resume/Resume.jsx";
+import JobDetails from "./components/Jobs/JobDetails.jsx";
+// import { useAuth } from "./context/AuthContext";
 // import Settings from "./components/Settings.jsx";
 
 const AppRouter = () => {
@@ -43,8 +45,9 @@ const AppRouter = () => {
           <Route element={<ProtectedRoute requireSetup={true} />}>
             <Route element={<Layout />}>
               <Route path="/jobs" element={<JobRecommendation />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/resume" element={<ResumePage />} />
+              <Route path="/job-details" element={<JobDetails />} />            
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/resume" element={<Resume />} />
               {/* <Route path="/settings" element={<div>Settings Page</div>} /> */}
             </Route>
           </Route>

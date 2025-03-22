@@ -1,6 +1,8 @@
+
 import { createContext, useContext, useState, useEffect } from "react";
 import { auth, db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const AuthContext = createContext();
 
@@ -14,48 +16,86 @@ export function AuthProvider({ children }) {
   const [userPreferences, setUserPreferences] = useState(null);
   const [hasCompletedSetup, setHasCompletedSetup] = useState(false);
 
-  // Function to check if a user has completed setup
+  // ✅ Google Sign-In and Save User Data to Firestore
+  const signInWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      if (user) {
+        await saveUserToFirestore(user);
+        await checkUserSetup(user);
+        setCurrentUser(user);
+      }
+    } catch (error) {
+      console.error("Google Sign-In Error:", error);
+    }
+  };
+
+  // ✅ Save user data to Firestore if new user
+  const saveUserToFirestore = async (user) => {
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        fullName: user.displayName || "",
+        email: user.email || "",
+        photoURL: user.photoURL || "",
+        phone: "",
+        location: "",
+        education: "",
+        experience: "",
+        skills: [],
+        interests: [],
+        bio: "",
+        getStarted: false, // Default to false until setup is complete
+      });
+    }
+  };
+
+  // ✅ Check if user has completed setup
   const checkUserSetup = async (user) => {
     try {
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      
-      if (userDoc.exists() && userDoc.data().getStarted === true) {
-        setHasCompletedSetup(true);
-        setUserPreferences(userDoc.data());
-        return true;
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        setUserPreferences(userData);
+        setHasCompletedSetup(userData.getStarted === true);
       } else {
         setHasCompletedSetup(false);
-        return false;
       }
     } catch (error) {
       console.error("Error checking user setup:", error);
       setHasCompletedSetup(false);
-      return false;
     }
   };
 
+  // ✅ Logout function
+  const logout = async () => {
+    await signOut(auth);
+    setCurrentUser(null);
+    setUserPreferences(null);
+    setHasCompletedSetup(false);
+  };
+
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
         await checkUserSetup(user);
       }
       setLoading(false);
     });
-    
+
     return unsubscribe;
   }, []);
 
-  const value = {
-    currentUser,
-    userPreferences,
-    hasCompletedSetup,
-    checkUserSetup
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ currentUser, userPreferences, hasCompletedSetup, signInWithGoogle, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );

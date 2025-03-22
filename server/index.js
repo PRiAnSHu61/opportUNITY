@@ -26,7 +26,7 @@ app.post("/api/recommend_jobs", async (req, res) => {
         // Flatten or choose primary values
         const disability = disabilities[0]; // Select first disability
         const work_mode = jobType.includes("On-Site") ? "On-Site" : "Remote"; // Set work mode
-        const job_location = location.join(", "); // Join locations into a string
+        const job_location = Array.isArray(location) ? location.join(", ") : location; // Join locations into a string
 
         // Send data to Flask API
         const response = await axios.post(FLASK_API_URL, {

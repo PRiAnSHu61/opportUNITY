@@ -73,8 +73,6 @@ const Step6 = () => {
         updatedAt: new Date().toISOString()
       };
 
-      console.log("User Profile Data:", userProfileData);
-
       // Check if user document exists and create/update accordingly
       const userRef = doc(db, "users", currentUser.uid);
       const userDoc = await getDoc(userRef);
@@ -108,7 +106,7 @@ const Step6 = () => {
         skills,
         work_mode: jobType,
         location: userLocation,
-        userId: currentUser.uid
+        userId: currentUser.uid // Include user ID for tracking
       };
 
       console.log("Sending data to backend:", userInputs);
@@ -123,32 +121,20 @@ const Step6 = () => {
 
         console.log("API Response:", response.data);
 
-        // Structure the recommendations data
-        const recommendationsData = {
-          highly_matched: response.data.highly_matched || [],
-          jobs_after_courses: response.data.jobs_after_courses || [],
-          suggested_jobs: response.data.suggested_jobs || []
-        };
-
         // Store job recommendations in Firestore
-        if (response.data) {
+        if (response.data && response.data.recommendations) {
           const recommendationsRef = doc(db, "jobRecommendations", currentUser.uid);
           await setDoc(recommendationsRef, {
-            recommendations: recommendationsData,
+            recommendations: response.data.recommendations,
             createdAt: new Date().toISOString(),
             queryParams: userInputs
           }, { merge: true });
-
-          console.log("Navigating to jobs with data:", {
-            userData: userInputs,
-            recommendations: recommendationsData
-          });
 
           // Navigate to job recommendations with user data and API response
           navigate("/jobs", { 
             state: { 
               userData: userInputs,
-              recommendations: recommendationsData
+              recommendations: response.data.recommendations || []
             }
           });
         } else {
@@ -162,11 +148,7 @@ const Step6 = () => {
         // Save data to Firebase even if API fails
         const recommendationsRef = doc(db, "jobRecommendations", currentUser.uid);
         await setDoc(recommendationsRef, {
-          recommendations: {
-            highly_matched: [],
-            jobs_after_courses: [],
-            suggested_jobs: []
-          },
+          recommendations: [],
           createdAt: new Date().toISOString(),
           queryParams: userInputs,
           apiError: true
@@ -176,11 +158,7 @@ const Step6 = () => {
         navigate("/jobs", { 
           state: { 
             userData: userInputs,
-            recommendations: {
-              highly_matched: [],
-              jobs_after_courses: [],
-              suggested_jobs: []
-            },
+            recommendations: [],
             apiError: true
           }
         });
